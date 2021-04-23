@@ -4,26 +4,32 @@ from videoprops import get_video_properties
 import os, re
 
 #GUI
-window = tk.Tk()
-title = tk.Label(text="Ultrawide Boss")
-title.pack()
+#window = tk.Tk()
+#title = tk.Label(text="Ultrawide Boss")
+#title.pack()
 
 #Library scan
-library_input = input("Enter directory to scan: ")
-libraryDir = library_input
+print('Please enter the full direct file path to the directory you want to scan.')
+library_input = input("Directory to scan: ")
 
 def directory_scan():
-    contents = os.listdir(libraryDir)
-    for item in contents:
-        if os.path.isdir(item):
-            directory_scan()
-        else:
-            print(item)
+    with os.scandir(library_input) as filename:
+        for entry in filename:
+            if entry.is_file():
+                print(entry.name)
+                yield os.path.join(library_input, entry.name)
+            elif entry.is_dir():
+                directory_scan()
+            else:
+                print("Unexpected object type in directory.")
 
 def library_scan():
-    videoRead = get_video_properties.read()
-    videoSplit = videoRead.split()
-    with os.scandir(directory_scan()) as listOfEntries:
-        videoSplit for item in listOfEntries:
-            if re.search("Resolution: /[0-9]{3,}×[0-9]{3,}/gm") for videoSplit == True:
-                print(item)
+    for item in directory_scan():
+        vProp = get_video_properties(item)
+        if vProp['width'] / vProp['height'] < 2.37:
+            print(f'''Resolution: {vProp['width']}x{vProp['height']}''')
+            print('This video file is not ultra-wide!')
+
+
+#print(directory_scan())
+library_scan()
