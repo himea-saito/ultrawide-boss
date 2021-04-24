@@ -8,10 +8,11 @@ import os, re
 #title = tk.Label(text="Ultrawide Boss")
 #title.pack()
 
-#Library scan
+#Indicate the directory path to scan
 print('Please enter the full direct file path to the directory you want to scan.')
 library_input = input("Directory to scan: ")
 
+#Create a list of all files in the directory
 def directory_scan():
     with os.scandir(library_input) as filename:
         for entry in filename:
@@ -23,6 +24,7 @@ def directory_scan():
             else:
                 print("Unexpected object type in directory.")
 
+#Scan for video files listed in directory_scan and list ones that are not ultra-wide format
 def library_scan():
     for item in directory_scan():
         vProp = get_video_properties(item)
@@ -30,6 +32,5 @@ def library_scan():
             print(f'''Resolution: {vProp['width']}x{vProp['height']}''')
             print('This video file is not ultra-wide!')
 
-
-#print(directory_scan())
+#Call functions
 library_scan()
