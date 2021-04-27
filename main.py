@@ -75,12 +75,9 @@ def detectBars(item):
         return(list([x, y]))
 
 #Crop video with detected black pixel area from detectBars function
-###THIS IS NOT FINISHED###
+###THIS IS NOT FINISHED: USE HANDBRAKE?###
 def cropBars(item, crop_area):
-    widthCrop = crop_area[0]
-    heightCrop = crop_area[1]
-    crop = subprocess.Popen(["./ffmpeg/bin/ffmpeg.exe", "-hide-banner", "-i", item,  "-h", "encoder=h264_nvenc", "-preset", "fast", "-movflags", "faststart",
-        "-level", "18", "filter:v", '"crop=iw-' + str(widthCrop) + ':' + 'ih-' + str(heightCrop) + '"', str(item) + "-RemuxUWBoss-" + ".m4v"])
+    this = []
 
 #Scan for video files listed in directory_scan and list ones that are not ultra-wide format
 def media_detection():
