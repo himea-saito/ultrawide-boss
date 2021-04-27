@@ -22,10 +22,10 @@ def directory_scan():
             yield(os.path.join(root, file))
 
 #Log resolution to .txt file
-def log_output(item, vStatus):
+def log_output(item, resolution):
     with open("UltrawideBoss.txt", "a") as outF:
         outF.write(item + '\n')
-        outF.write(f'''Resolution: {vStatus['width']}x{vStatus['height']}''' + '\n')
+        outF.write('Resolution: ' + str(resolution) + '\n')
         outF.write('\n')
         outF.close
 
@@ -74,18 +74,29 @@ def detectBars(item):
         print('Detected black pixels: ' + str(x) + 'x' + str(y))
         return(list([x, y]))
 
+#Crop video with detected black pixel area from detectBars function
+###THIS IS NOT FINISHED###
+def cropBars(item, crop_area):
+    widthCrop = crop_area[0]
+    heightCrop = crop_area[1]
+    crop = subprocess.Popen(["./ffmpeg/bin/ffmpeg.exe", "-hide-banner", "-i", item,  "-h", "encoder=h264_nvenc", "-preset", "fast", "-movflags", "faststart",
+        "-level", "18", "filter:v", '"crop=iw-' + str(widthCrop) + ':' + 'ih-' + str(heightCrop) + '"', str(item) + "-RemuxUWBoss-" + ".m4v"])
+
 #Scan for video files listed in directory_scan and list ones that are not ultra-wide format
-def library_scan():
+def media_detection():
     for item in directory_scan():
         try:
             vProp = get_video_properties(item)
+            resolution = str(str(vProp['width']) + 'x' + str(vProp['height']))
             if vProp['width'] / vProp['height'] < 2.37:
-                print(item)
-                print(f'''Resolution: {vProp['width']}x{vProp['height']}''')
                 crop_region = detectBars(item)
+                crop_area = []
+                crop_area.append(crop_region)
+                print(item)
+                print('Resolution: ' + str(resolution))
                 log_output(item, vProp)
-                if crop_region != 0:
-                    log_crop(crop_region)
+                if crop_area != 0:
+                    log_crop(crop_area)
             else:
                 continue
         #Handling of unexpected character sets
@@ -116,4 +127,4 @@ def library_scan_and_crop():
 #else:
     #print('Please answer yes or no')
 
-library_scan()
+media_detection()
