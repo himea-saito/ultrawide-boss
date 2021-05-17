@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import tkinter as tk
-import os, pathlib, shutil, sys, threading, time, videodetection, transcoding
+import os, pathlib, shutil, sys, traceback, threading, time, videodetection, transcoding
 
 #GUI
 #window = tk.Tk()
@@ -18,9 +18,6 @@ def main():
         pulledvals = videodetection.media_detection(item)
         cropx = pulledvals[0]
         cropy = pulledvals[1]
-        resx = pulledvals[2]
-        resy = pulledvals[3]
-        print(resx)
         if transcode == 'Yes':
             #Folder for output transcoded video files
             #Creates a temporary directory for files being worked on
@@ -30,18 +27,26 @@ def main():
             path = os.path.join(cpfolder, tempfolder)
             fullpath = os.path.join(path, activevideo)
             if os.path.exists(fullpath): #Check if file exists before copying, error handling
-                do = 'nothing'
+                do = 'Nothing'
             else:
                 print('Copying video file to transcoding folder.')
                 os.mkdir(path) #Create temporary folder
                 CPprogress(item, fullpath)
             ##ADDITIONAL FUNCTIONS FOR OTHER CONFIGS NOT USING NVIDIA WILL BE ADDED LATER##      
-            transcoding.Transcode_Auto_Size(resy, fullpath)
-            finished_video = str(fullpath) + "-RemuxUWB" + ".m4v"
-            shutil.move(finished_video, cpfolder) #Move video to finished directory when completed
-            os.rmdir(path) #Remove temporary folder
+            if transcoding.cropNvidia(fullpath, cropx, cropy) == 0:
+                try:
+                    finished_video = str(fullpath) + "-RemuxUWB" + ".m4v"
+                    shutil.move(finished_video, cpfolder) #Move transcoded file to directory when completed
+                    os.remove(fullpath) #Remove copied video file
+                    os.rmdir(path) #Remove temporary folder
+                    print('Transcode completed and temporary files have been cleaned up.')
+                except:
+                    traceback.print_exc(limit=None, file=None, chain=True)
+                    print('Transcode completed, but something went wrong with cleanup.')
+            else:
+                print('Process returned error code, transcode was not finished.')
         if transcode == 'No':
-            print('Item was not recoded.')
+            print('Item was not transcoded.')
             continue
 
 #Create a list of all files in the directory and subdirectories
@@ -80,8 +85,8 @@ def CPprogress(SOURCE, DESTINATION):
         dst_file = os.path.join(DESTINATION, os.path.basename(SOURCE))
     else: dst_file = DESTINATION
     print (" ")
-    print (BOLD + UNDERLINE + "FROM:" + CEND + "   "), SOURCE
-    print (BOLD + UNDERLINE + "TO:" + CEND + "     "), dst_file
+    print (BOLD + UNDERLINE + "FROM:" + CEND + "   " + str(SOURCE))
+    print (BOLD + UNDERLINE + "TO:" + CEND + "     " + str(dst_file))
     print (" ")
     threading.Thread(name='progresso', target=getPERCECENTprogress, args=(SOURCE, dst_file)).start()
     shutil.copy2(SOURCE, DESTINATION)

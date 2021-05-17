@@ -20,7 +20,6 @@ def media_detection(item):
         res = [resolution(item)[0], resolution(item)[1]]
         if res[0] / res[1] < 2.37:
             crop_region = detectBars(item)
-            print(crop_region)
             cropx = crop_region[0]
             cropy = crop_region[1]
             res1 = res[0]
@@ -51,10 +50,11 @@ def media_detection(item):
         #print('This file is not a readable video format, skipping!')
         #logging.log_error(item)
 
-#Returns a value of x by y pixels in a video file and scan 60 (~2.5 seconds) frames for consistent black color value
+#Returns a value of x by y pixels in a video file, determined by scanning one out of every 3600 (2 minutes@30fps) frames for black area, up to 100 frames
 def detectBars(item):
     result = subprocess.Popen(["./ffmpeg/bin/ffmpeg.exe", "-skip_frame", "nokey", "-ss", "2", "-y", "-hide_banner", 
-        "-i", item, "-vf", "cropdetect", "-frames", "60", "-an", "-f", "null", "-"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf8')
+        "-i", item, "-vf", "select='not(mod(n,3600))'", "cropdetect", "-frames", "100", "-an", "-f", "null", "-"], 
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf8')
     match = re.findall("crop=[0-9]+:[0-9]+:[0-9]+:[0-9]+", result.stderr.read())
 ###NOTE TO SELF: ADD ERROR HANDLING IF FILE IS NOT A VALID VIDEO FORMAT###
     readResults = []
